@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pepino AI — Configurá tu agente</title>
+  <meta name="description" content="Configurá tu agente de IA para WhatsApp en minutos.">
+
+  <!-- Funnel Sans + JetBrains Mono — tipografías oficiales Pepino AI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Funnel+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── DESIGN TOKENS — exact match Pepino-designsystem ── */
+    :root {
+      --bg:            #0B0E0C;
+      --bg-card:       #11150F;
+      --bg-card-hover: #161B12;
+      --text-1:        #F4F7F2;
+      --text-2:        #B6C4B2;
+      --text-3:        #7E8C7C;
+      --green:         #A0FF79;
+      --green-hover:   #b3ff8c;
+      --green-press:   #88e862;
+      --green-dim:     rgba(160,255,121,.10);
+      --green-border:  rgba(160,255,121,.26);
+      --border:        #243026;
+      --border-2:      #324034;
+      --font:          "Funnel Sans", system-ui, sans-serif;
+      --font-mono:     "JetBrains Mono", ui-monospace, monospace;
+      --r-sm:  4px;
+      --r-md:  10px;
+      --r-lg:  18px;
+      --r-xl:  24px;
+      --ease:  cubic-bezier(.22,.61,.36,1);
+      --dur:   200ms;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text-1);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── NAV ── */
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(11,14,12,.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      height: 58px;
+      display: flex; align-items: center;
+      padding: 0 24px;
+      gap: 10px;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; }
+    .nav-name {
+      font-size: 16px; font-weight: 700;
+      letter-spacing: -.02em; line-height: 1;
+    }
+    .nav-name .ai {
+      font-family: var(--font-mono);
+      font-size: .56em;
+      color: var(--green);
+      vertical-align: super;
+      margin-left: .08em;
+    }
+    .nav-step {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+
+    /* ── MAIN ── */
+    .main {
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 44px 24px 96px;
+    }
+
+    /* ── PROGRESS ── */
+    .progress {
+      margin-bottom: 36px;
+    }
+    .progress-track {
+      display: flex; gap: 5px;
+      margin-bottom: 10px;
+    }
+    .seg {
+      flex: 1; height: 3px;
+      background: var(--border-2);
+      border-radius: 99px;
+      overflow: hidden;
+      position: relative;
+    }
+    .seg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: var(--green);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .4s var(--ease);
+      border-radius: 99px;
+    }
+    .seg.done::after  { transform: scaleX(1); }
+    .seg.cur::after   { transform: scaleX(.55); }
+    .progress-lbls {
+      display: flex;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+    .progress-lbls span { flex: 1; }
+    .progress-lbls span:first-child { text-align: left; }
+    .progress-lbls span:last-child  { text-align: right; }
+    .progress-lbls span:not(:first-child):not(:last-child) { text-align: center; }
+    .progress-lbls span.cur { color: var(--green); }
+
+    /* ── HINT BAR ── */
+    .hint {
+      background: var(--green-dim);
+      border: 1px solid var(--green-border);
+      border-radius: var(--r-md);
+      padding: 11px 14px;
+      font-size: 13px; font-weight: 300;
+      color: var(--text-2);
+      line-height: 1.5;
+      margin-bottom: 32px;
+      display: flex; align-items: flex-start; gap: 9px;
+    }
+    .hint-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+
+    /* ── STEP ── */
+    .step { display: none; }
+    .step.active {
+      display: block;
+      animation: fadeUp .28s var(--ease) both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-h { font-size: 28px; font-weight: 700; letter-spacing: -.025em; line-height: 1.05; margin-bottom: 7px; }
+    .step-sub { font-size: 15px; font-weight: 300; color: var(--text-2); line-height: 1.55; margin-bottom: 28px; }
+
+    /* ── FORM ── */
+    .field { margin-bottom: 22px; }
+    .lbl {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 8px;
+    }
+    .lbl .opt {
+      font-family: var(--font);
+      font-size: 11px;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--border-2);
+      margin-left: 5px;
+    }
+    .inp, .txa {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      color: var(--text-1);
+      font-family: var(--font);
+      font-size: 15px;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color var(--dur), box-shadow var(--dur);
+      -webkit-appearance: none;
+    }
+    .inp:focus, .txa:focus {
+      border-color: var(--green-border);
+      box-shadow: 0 0 0 3px rgba(160,255,121,.07);
+    }
+    .inp::placeholder, .txa::placeholder { color: var(--text-3); }
+    .txa { resize: vertical; min-height: 96px; line-height: 1.6; }
+    .fn { font-size: 12px; color: var(--text-3); margin-top: 6px; line-height: 1.5; }
+
+    /* ── BUSINESS TYPE ── */
+    .type-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .type-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 11px 8px;
+      text-align: center;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all var(--dur) var(--ease);
+      user-select: none;
+      line-height: 1.3;
+    }
+    .type-chip:hover { border-color: var(--border-2); color: var(--text-1); }
+    .type-chip.sel {
+      background: var(--green-dim);
+      border-color: var(--green-border);
+      color: var(--green);
+    }
+    .type-chip .ti { display: block; font-size: 20px; margin-bottom: 5px; }
+
+    /* ── AGENTS ── */
+    .agents-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .agent-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      cursor: pointer;
+      transition: all var(--dur) var(--ease);
+      position: relative;
+    }
+    .agent-card:hover { border-color: var(--border-2); background: var(--bg-card-hover); }
+    .agent-card.sel  { background: var(--green-dim); border-color: var(--green-border); }
+    .agent-card.feat::after {
+      content: 'Más elegido';
+      position: absolute; top: 10px; right: 10px;
+      font-family: var(--font-mono);
+      font-size: 9px; letter-spacing: .06em; text-transform: uppercase;
+      background: rgba(160,255,121,.14); color: var(--green);
+      border: 1px solid var(--green-border);
+      border-radius: 99px; padding: 2px 7px;
+    }
+    .agent-check {
+      position: absolute; top: 10px; left: 10px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--green);
+      display: none; align-items: center; justify-content: center;
+    }
+    .agent-card.sel .agent-check { display: flex; }
+    .agent-check svg { width: 11px; height: 11px; }
+    .agent-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      object-fit: cover; margin-bottom: 10px;
+      border: 2px solid var(--border);
+      display: block;
+    }
+    .agent-card.sel .agent-avatar { border-color: var(--green-border); }
+    .agent-n  { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+    .agent-r  {
+      font-family: var(--font-mono); font-size: 9.5px;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--text-3); margin-top: 2px;
+    }
+    .agent-p  { margin-top: 10px; font-size: 14px; font-weight: 600; }
+    .agent-p .mo { font-family: var(--font-mono); font-size: 10px; color: var(--text-3); font-weight: 400; }
+
+    /* ── PAYMENT ── */
+    .pay-sum {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 16px 18px;
+      margin-bottom: 24px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .pay-sum .pn { font-weight: 600; font-size: 15px; }
+    .pay-sum .pr { font-family: var(--font-mono); font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; margin-top: 2px; }
+    .pay-sum .pa { font-size: 24px; font-weight: 700; color: var(--green); letter-spacing: -.02em; text-align: right; }
+    .pay-sum .pp { font-family: var(--font-mono); font-size: 10px; color: var(--text-3); display: block; }
+
+    .pay-list { display: flex; flex-direction: column; gap: 8px; }
+    .pay-opt {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 14px 16px;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 12px;
+      transition: all var(--dur) var(--ease);
+    }
+    .pay-opt:hover { border-color: var(--border-2); }
+    .pay-opt.sel { background: var(--green-dim); border-color: var(--green-border); }
+    .pay-opt-icon { font-size: 20px; }
+    .pay-opt-name { font-weight: 500; font-size: 14px; }
+    .pay-opt-sub  { font-size: 12px; color: var(--text-3); }
+    .pay-radio {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid var(--border-2);
+      margin-left: auto; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--dur) var(--ease);
+    }
+    .pay-opt.sel .pay-radio { border-color: var(--green); background: var(--green); }
+    .pay-opt.sel .pay-radio::after {
+      content: ''; width: 6px; height: 6px;
+      background: var(--bg); border-radius: 50%;
+    }
+
+    .card-form {
+      display: none;
+      margin-top: 12px;
+      padding: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      animation: fadeUp .22s var(--ease) both;
+    }
+    .card-form.vis { display: block; }
+    .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* ── CALENDAR ── */
+    .cal-list { display: flex; flex-direction: column; gap: 10px; }
+    .cal-opt {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 15px 18px;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 14px;
+      transition: all var(--dur) var(--ease);
+    }
+    .cal-opt:hover { border-color: var(--border-2); background: var(--bg-card-hover); }
+    .cal-opt.primary {
+      border-color: var(--green-border);
+      background: rgba(160,255,121,.06);
+    }
+    .cal-opt.primary:hover { background: rgba(160,255,121,.10); }
+    .cal-icon { font-size: 22px; }
+    .cal-n { font-weight: 600; font-size: 14px; }
+    .cal-d { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+    .cal-arr { margin-left: auto; color: var(--text-3); font-size: 16px; }
+    .cal-opt.primary .cal-arr { color: var(--green); }
+    .cal-skip {
+      text-align: center; margin-top: 18px;
+      font-size: 13px; color: var(--text-3);
+      cursor: pointer;
+      text-decoration: underline; text-underline-offset: 3px;
+    }
+    .cal-skip:hover { color: var(--text-2); }
+
+    /* ── QR / FINAL ── */
+    .success-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--green-dim);
+      border: 1px solid var(--green-border);
+      border-radius: 99px; padding: 4px 12px;
+      font-family: var(--font-mono); font-size: 10.5px;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--green); margin-bottom: 10px;
+    }
+    .success-badge .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green);
+      animation: blink 1.6s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; } 50% { opacity: .3; }
+    }
+
+    .qr-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      padding: 32px 24px;
+      display: flex; flex-direction: column; align-items: center; gap: 22px;
+    }
+    .qr-frame {
+      background: #fff;
+      padding: 14px; border-radius: var(--r-lg);
+    }
+    .qr-frame img { width: 180px; height: 180px; display: block; }
+    .qr-text { text-align: center; }
+    .qr-text h3 { font-size: 17px; font-weight: 700; letter-spacing: -.01em; margin-bottom: 5px; }
+    .qr-text p  { font-size: 13px; color: var(--text-2); font-weight: 300; line-height: 1.55; }
+    .qr-or {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: .14em; text-transform: uppercase; color: var(--text-3);
+    }
+    .qr-note {
+      text-align: center; margin-top: 18px;
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--text-3); line-height: 1.6;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 48px; padding: 0 24px;
+      border-radius: var(--r-md);
+      font-family: var(--font); font-size: 15px; font-weight: 600;
+      cursor: pointer; border: none; text-decoration: none;
+      transition: all var(--dur) var(--ease);
+      letter-spacing: -.01em; white-space: nowrap;
+      -webkit-appearance: none;
+    }
+    .btn-g  { background: var(--green); color: #0B0E0C; }
+    .btn-g:hover  { background: var(--green-hover); }
+    .btn-g:active { background: var(--green-press); }
+    .btn-o {
+      background: transparent; color: var(--text-1);
+      border: 1px solid var(--border-2);
+    }
+    .btn-o:hover { border-color: var(--text-3); background: rgba(255,255,255,.04); }
+    .btn-f  { width: 100%; }
+    .btn-lg { height: 52px; font-size: 16px; }
+
+    .actions { margin-top: 28px; display: flex; flex-direction: column; gap: 10px; }
+
+    /* ── LOADING ── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(11,14,12,.92);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 20px;
+      z-index: 100; opacity: 0; pointer-events: none;
+      transition: opacity .3s;
+    }
+    .overlay.vis { opacity: 1; pointer-events: all; }
+    .spinner {
+      width: 46px; height: 46px;
+      border: 3px solid var(--border);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .overlay-txt {
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: .16em; text-transform: uppercase; color: var(--text-3);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 480px) {
+      .main      { padding: 28px 16px 80px; }
+      .agents-grid { grid-template-columns: 1fr; }
+      .type-grid { grid-template-columns: repeat(2, 1fr); }
+      .card-row  { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">
+    <svg id="nav-mark" width="30" height="30" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"></svg>
+    <span class="nav-name">Pepino<span class="ai">AI</span></span>
+  </div>
+  <span class="nav-step" id="nav-step">Paso 1 de 6</span>
+</nav>
+
+<!-- LOADING OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="spinner"></div>
+  <div class="overlay-txt" id="overlay-txt">Configurando tu agente…</div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- PROGRESS -->
+  <div class="progress">
+    <div class="progress-track" id="progress-track">
+      <div class="seg cur"></div>
+      <div class="seg"></div>
+      <div class="seg"></div>
+      <div class="seg"></div>
+      <div class="seg"></div>
+      <div class="seg"></div>
+    </div>
+    <div class="progress-lbls" id="progress-lbls">
+      <span class="cur">Negocio</span>
+      <span>Servicios</span>
+      <span>Agente</span>
+      <span>Pago</span>
+      <span>Calendario</span>
+      <span>¡Listo!</span>
+    </div>
+  </div>
+
+  <!-- HINT -->
+  <div class="hint">
+    <span class="hint-icon">💬</span>
+    <span>Si ahora no tenés toda la información, no te preocupes — lo que falte te lo pedimos después.</span>
+  </div>
+
+  <!-- ── STEP 1: NEGOCIO ── -->
+  <div class="step active" id="step-0">
+    <h1 class="step-h">Empecemos.</h1>
+    <p class="step-sub">Contanos un poco sobre tu negocio para que tu agente quede bien configurado.</p>
+
+    <div class="field">
+      <label class="lbl" for="account-name">Nombre de tu cuenta</label>
+      <input class="inp" id="account-name" type="text"
+             placeholder="ej. Peluquería Luna" autocomplete="off" />
+    </div>
+
+    <div class="field">
+      <label class="lbl">Tipo de negocio <span class="opt">(opcional)</span></label>
+      <div class="type-grid" id="type-grid">
+        <div class="type-chip" data-t="Peluquería">
+          <span class="ti">✂️</span>Peluquería
+        </div>
+        <div class="type-chip" data-t="Estética">
+          <span class="ti">💅</span>Estética
+        </div>
+        <div class="type-chip" data-t="Restaurant">
+          <span class="ti">🍽️</span>Restaurant
+        </div>
+        <div class="type-chip" data-t="Clínica">
+          <span class="ti">🏥</span>Clínica
+        </div>
+        <div class="type-chip" data-t="E-commerce">
+          <span class="ti">🛍️</span>E-commerce
+        </div>
+        <div class="type-chip" data-t="Otro">
+          <span class="ti">⚡</span>Otro
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-g btn-f btn-lg" onclick="goNext(0)">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: SERVICIOS ── -->
+  <div class="step" id="step-1">
+    <h1 class="step-h">Tus servicios.</h1>
+    <p class="step-sub">Así tu agente puede responder preguntas de tus clientes con información real.</p>
+
+    <div class="field">
+      <label class="lbl" for="svc-desc">¿Qué ofrecés? <span class="opt">(opcional)</span></label>
+      <textarea class="txa" id="svc-desc" rows="4"
+        placeholder="ej. Cortes de pelo, coloraciones, tratamientos capilares, manicura y pedicura…"></textarea>
+      <div class="fn">Podés ser tan general o específico como quieras. Tu agente aprende de esto.</div>
+    </div>
+
+    <div class="field">
+      <label class="lbl" for="svc-prices">Costos de tus servicios <span class="opt">(opcional)</span></label>
+      <textarea class="txa" id="svc-prices" rows="3"
+        placeholder="ej. Corte: $5.000  ·  Coloración: $12.000  ·  Manicura: $3.500…"></textarea>
+      <div class="fn">Si no los cargás ahora, podés agregarlos más tarde desde el panel.</div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-g btn-f btn-lg" onclick="goNext(1)">Continuar →</button>
+      <button class="btn btn-o btn-f" onclick="showStep(0)">← Volver</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: AGENTE ── -->
+  <div class="step" id="step-2">
+    <h1 class="step-h">Tu agente.</h1>
+    <p class="step-sub">Elegí quién va a atender a tus clientes por WhatsApp.</p>
+
+    <div class="field">
+      <label class="lbl" for="agent-name">¿Cómo querés llamar a tu agente? <span class="opt">(opcional)</span></label>
+      <input class="inp" id="agent-name" type="text"
+             placeholder="ej. Asistente de Luna" autocomplete="off" />
+      <div class="fn">Así se va a presentar a tus clientes. Si lo dejás vacío, usamos el nombre del agente.</div>
+    </div>
+
+    <div class="field">
+      <label class="lbl">¿Qué tipo de agente querés?</label>
+      <div class="agents-grid" id="agents-grid"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-g btn-f btn-lg" onclick="goNext(2)">Continuar →</button>
+      <button class="btn btn-o btn-f" onclick="showStep(1)">← Volver</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 4: PAGO ── -->
+  <div class="step" id="step-3">
+    <h1 class="step-h">Todo en orden.</h1>
+    <p class="step-sub">Elegí cómo querés pagar. Podés cancelar en cualquier momento.</p>
+
+    <div class="pay-sum">
+      <div>
+        <div class="pn" id="pay-name">—</div>
+        <div class="pr" id="pay-role">—</div>
+      </div>
+      <div style="text-align:right">
+        <div class="pa" id="pay-amount">—</div>
+        <span class="pp" id="pay-period">al mes</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="lbl">Método de pago</label>
+      <div class="pay-list">
+        <div class="pay-opt" data-m="card" onclick="selPay('card')">
+          <span class="pay-opt-icon">💳</span>
+          <div>
+            <div class="pay-opt-name">Tarjeta de crédito / débito</div>
+            <div class="pay-opt-sub">Visa, Mastercard, American Express</div>
+          </div>
+          <div class="pay-radio"></div>
+        </div>
+        <div class="pay-opt" data-m="transfer" onclick="selPay('transfer')">
+          <span class="pay-opt-icon">🏦</span>
+          <div>
+            <div class="pay-opt-name">Transferencia bancaria</div>
+            <div class="pay-opt-sub">CBU / CVU · acreditación inmediata</div>
+          </div>
+          <div class="pay-radio"></div>
+        </div>
+        <div class="pay-opt" data-m="mp" onclick="selPay('mp')">
+          <span class="pay-opt-icon">🟦</span>
+          <div>
+            <div class="pay-opt-name">Mercado Pago</div>
+            <div class="pay-opt-sub">Saldo, link de pago, hasta 12 cuotas</div>
+          </div>
+          <div class="pay-radio"></div>
+        </div>
+      </div>
+
+      <div class="card-form" id="card-form">
+        <div class="field" style="margin-bottom:12px">
+          <label class="lbl" style="font-size:9.5px">Número de tarjeta</label>
+          <input class="inp" type="text" placeholder="1234 5678 9012 3456" maxlength="19" />
+        </div>
+        <div class="card-row">
+          <div>
+            <label class="lbl" style="font-size:9.5px">Vencimiento</label>
+            <input class="inp" type="text" placeholder="MM/AA" maxlength="5" />
+          </div>
+          <div>
+            <label class="lbl" style="font-size:9.5px">CVV</label>
+            <input class="inp" type="text" placeholder="123" maxlength="4" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fn" style="margin-top:2px">🔒 Pago seguro. SSL encriptado. Cancelá cuando quieras.</div>
+
+    <div class="actions">
+      <button class="btn btn-g btn-f btn-lg" onclick="handlePayment()">Confirmar y continuar →</button>
+      <button class="btn btn-o btn-f" onclick="showStep(2)">← Volver</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 5: CALENDARIO ── -->
+  <div class="step" id="step-4">
+    <h1 class="step-h">Tu agenda.</h1>
+    <p class="step-sub">Conectá tu calendario y tu agente podrá ver disponibilidad en tiempo real y confirmar turnos sin que tengas que intervenir.</p>
+
+    <div class="cal-list">
+      <div class="cal-opt primary" onclick="selCal('google')">
+        <span class="cal-icon">📅</span>
+        <div>
+          <div class="cal-n">Google Calendar</div>
+          <div class="cal-d">Conexión directa. Listo en segundos.</div>
+        </div>
+        <span class="cal-arr">→</span>
+      </div>
+      <div class="cal-opt" onclick="selCal('icloud')">
+        <span class="cal-icon">🍎</span>
+        <div>
+          <div class="cal-n">Apple Calendar</div>
+          <div class="cal-d">Conectá con tu Apple ID.</div>
+        </div>
+        <span class="cal-arr">→</span>
+      </div>
+      <div class="cal-opt" onclick="selCal('outlook')">
+        <span class="cal-icon">📧</span>
+        <div>
+          <div class="cal-n">Outlook / Microsoft 365</div>
+          <div class="cal-d">Para empresas y cuentas corporativas.</div>
+        </div>
+        <span class="cal-arr">→</span>
+      </div>
+      <div class="cal-opt" onclick="selCal('other')">
+        <span class="cal-icon">🔗</span>
+        <div>
+          <div class="cal-n">Otro calendario</div>
+          <div class="cal-d">Compartí un link CalDAV o iCal.</div>
+        </div>
+        <span class="cal-arr">→</span>
+      </div>
+    </div>
+    <div class="cal-skip" onclick="selCal('later')">Lo conecto después</div>
+
+    <div class="actions" style="margin-top:18px">
+      <button class="btn btn-o btn-f" onclick="showStep(3)">← Volver</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 6: ¡LISTO! / QR ── -->
+  <div class="step" id="step-5">
+    <div style="text-align:center; margin-bottom:24px">
+      <div class="success-badge"><span class="dot"></span>Agente activo</div>
+      <h1 class="step-h" style="font-size:32px; margin-bottom:8px">¡Ya casi!</h1>
+      <p class="step-sub" style="margin-bottom:0">
+        Escaneá el código QR con tu teléfono para vincular tu WhatsApp
+        y que <strong id="final-name">tu agente</strong> empiece a trabajar ahora mismo.
+      </p>
+    </div>
+
+    <div class="qr-card">
+      <div class="qr-frame">
+        <img
+          src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fwa.me%2F5491100000000%3Ftext%3DHola%2520Pepino%2520AI&bgcolor=ffffff&color=000000&margin=0"
+          alt="QR WhatsApp"
+          loading="lazy"
+        />
+      </div>
+      <div class="qr-text">
+        <h3>Escaneá desde WhatsApp</h3>
+        <p>Abrí WhatsApp → Dispositivos vinculados → Vincular un dispositivo</p>
+      </div>
+      <div class="qr-or">— o en este dispositivo —</div>
+      <a class="btn btn-o btn-f"
+         href="https://wa.me/5491100000000?text=Hola%20Pepino%20AI"
+         target="_blank" rel="noopener noreferrer">
+        Abrir WhatsApp
+      </a>
+    </div>
+
+    <div class="qr-note">
+      Si no podés escanearlo ahora, te enviamos el link por email.<br>
+      Tu agente estará activo en cuanto escanees el código.
+    </div>
+  </div>
+
+</main>
+
+<script>
+  /* ── STATE ── */
+  const S = {
+    accountName:   '',
+    businessType:  '',
+    svcDesc:       '',
+    svcPrices:     '',
+    agentName:     '',
+    selectedAgent: null,
+    payment:       '',
+    calendar:      '',
+  };
+
+  /* ── AGENTS DATA — source: SaturnLab repo ── */
+  const AGENTS = [
+    { photo: 'https://randomuser.me/api/portraits/men/32.jpg',  name: 'Paco',     role: 'Gestor de Turnos',            price: '95 €',       period: 'al mes',    featured: false },
+    { photo: 'https://randomuser.me/api/portraits/men/57.jpg',  name: 'Mateo',    role: 'Especialista en Ocupación',   price: '79 €',       period: 'al mes',    featured: true  },
+    { photo: 'https://randomuser.me/api/portraits/men/22.jpg',  name: 'Lucciano', role: 'Especialista en Reputación',  price: '69 €',       period: 'al mes',    featured: false },
+    { photo: 'https://randomuser.me/api/portraits/women/44.jpg',name: 'Erica',    role: 'Agente de Delivery',          price: '89 €',       period: 'al mes',    featured: false },
+    { photo: 'https://randomuser.me/api/portraits/men/10.jpg',  name: 'Elton',    role: 'Creador de Sitios Web',       price: 'Desde 75 €', period: 'pago único',featured: false },
+  ];
+
+  /* ── PEPINO MARK SVG ── */
+  function drawMark(el, size) {
+    const cx = size / 2, cy = size / 2, r = size * 0.44;
+    const seeds = Array.from({ length: 11 }, (_, i) => {
+      const a = (i / 11) * Math.PI * 2 - Math.PI / 2;
+      const d = r * 0.435;
+      return { x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d };
+    });
+    el.setAttribute('viewBox', `0 0 ${size} ${size}`);
+    el.innerHTML =
+      `<rect width="${size}" height="${size}" rx="${(size * 0.45).toFixed(1)}" fill="#11150F"/>` +
+      `<circle cx="${cx}" cy="${cy}" r="${r.toFixed(2)}" fill="#A0FF79"/>` +
+      `<circle cx="${cx}" cy="${cy}" r="${(r*.83).toFixed(2)}" fill="#0B0E0C"/>` +
+      `<circle cx="${cx}" cy="${cy}" r="${(r*.74).toFixed(2)}" fill="#A0FF79"/>` +
+      `<circle cx="${cx}" cy="${cy}" r="${(r*.59).toFixed(2)}" fill="#0B0E0C"/>` +
+      seeds.map(s =>
+        `<circle cx="${s.x.toFixed(2)}" cy="${s.y.toFixed(2)}" r="${(r*.09).toFixed(2)}" fill="#A0FF79"/>`
+      ).join('') +
+      `<circle cx="${cx}" cy="${cy}" r="${(r*.11).toFixed(2)}" fill="#A0FF79"/>`;
+  }
+
+  /* ── RENDER AGENTS ── */
+  function renderAgents() {
+    document.getElementById('agents-grid').innerHTML = AGENTS.map((a, i) => `
+      <div class="agent-card${a.featured ? ' feat' : ''}" data-i="${i}" onclick="selAgent(${i})">
+        <div class="agent-check">
+          <svg viewBox="0 0 12 12" fill="none">
+            <polyline points="2,6 5,9 10,3" stroke="#0B0E0C" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <img class="agent-avatar" src="${a.photo}" alt="${a.name}" loading="lazy" />
+        <div class="agent-n">${a.name}</div>
+        <div class="agent-r">${a.role}</div>
+        <div class="agent-p">${a.price} <span class="mo">${a.period}</span></div>
+      </div>
+    `).join('');
+  }
+
+  /* ── SELECT AGENT ── */
+  function selAgent(i) {
+    S.selectedAgent = i;
+    document.querySelectorAll('.agent-card').forEach((c, j) =>
+      c.classList.toggle('sel', j === i)
+    );
+  }
+
+  /* ── SELECT BUSINESS TYPE ── */
+  document.addEventListener('click', e => {
+    const chip = e.target.closest('.type-chip');
+    if (!chip) return;
+    document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('sel'));
+    chip.classList.add('sel');
+    S.businessType = chip.dataset.t;
+  });
+
+  /* ── SELECT PAYMENT ── */
+  function selPay(m) {
+    S.payment = m;
+    document.querySelectorAll('.pay-opt').forEach(o =>
+      o.classList.toggle('sel', o.dataset.m === m)
+    );
+    document.getElementById('card-form').classList.toggle('vis', m === 'card');
+  }
+
+  /* ── SELECT CALENDAR ── */
+  function selCal(provider) {
+    S.calendar = provider;
+    goNext(4);
+  }
+
+  /* ── PROGRESS ── */
+  function updateProgress(cur) {
+    document.querySelectorAll('#progress-track .seg').forEach((s, i) => {
+      s.classList.toggle('done', i < cur);
+      s.classList.toggle('cur',  i === cur);
+    });
+    document.querySelectorAll('#progress-lbls span').forEach((l, i) =>
+      l.classList.toggle('cur', i === cur)
+    );
+    document.getElementById('nav-step').textContent = `Paso ${cur + 1} de 6`;
+  }
+
+  /* ── NAVIGATION ── */
+  function showStep(idx) {
+    document.querySelectorAll('.step').forEach((s, i) =>
+      s.classList.toggle('active', i === idx)
+    );
+    updateProgress(idx);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goNext(from) {
+    if (from === 0) {
+      S.accountName = document.getElementById('account-name').value.trim();
+      if (!S.accountName) {
+        document.getElementById('account-name').focus();
+        document.getElementById('account-name').style.borderColor = 'rgba(160,255,121,.5)';
+        setTimeout(() => document.getElementById('account-name').style.borderColor = '', 1800);
+        return;
+      }
+    }
+    if (from === 1) {
+      S.svcDesc   = document.getElementById('svc-desc').value.trim();
+      S.svcPrices = document.getElementById('svc-prices').value.trim();
+    }
+    if (from === 2) {
+      S.agentName = document.getElementById('agent-name').value.trim();
+      if (S.selectedAgent === null) {
+        const grid = document.getElementById('agents-grid');
+        grid.style.outline = '2px solid var(--green-border)';
+        grid.style.borderRadius = 'var(--r-lg)';
+        setTimeout(() => { grid.style.outline = ''; grid.style.borderRadius = ''; }, 1800);
+        return;
+      }
+      updatePaySummary();
+    }
+    if (from === 4) {
+      const a = S.selectedAgent !== null ? AGENTS[S.selectedAgent] : null;
+      const displayName = S.agentName || (a ? a.name : 'tu agente');
+      document.getElementById('final-name').textContent = displayName;
+    }
+    showStep(from + 1);
+  }
+
+  /* ── PAY SUMMARY ── */
+  function updatePaySummary() {
+    const a = S.selectedAgent !== null ? AGENTS[S.selectedAgent] : null;
+    const label = a ? (S.agentName ? `${S.agentName} (${a.name})` : a.name) : '—';
+    document.getElementById('pay-name').textContent   = label;
+    document.getElementById('pay-role').textContent   = a ? a.role  : '—';
+    document.getElementById('pay-amount').textContent = a ? a.price : '—';
+    document.getElementById('pay-period').textContent = a ? a.period : '';
+  }
+
+  /* ── PAYMENT FLOW ── */
+  function handlePayment() {
+    const o = document.getElementById('overlay');
+    const t = document.getElementById('overlay-txt');
+    o.classList.add('vis');
+    const msgs = ['Configurando tu agente…', 'Preparando el entorno…', '¡Casi listo!'];
+    let mi = 0;
+    const iv = setInterval(() => { t.textContent = msgs[++mi % msgs.length]; }, 700);
+    setTimeout(() => {
+      clearInterval(iv);
+      o.classList.remove('vis');
+      showStep(4);
+    }, 2400);
+  }
+
+  /* ── INIT ── */
+  drawMark(document.getElementById('nav-mark'), 30);
+  renderAgents();
+</script>
+</body>
+</html>
