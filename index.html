@@ -226,19 +226,50 @@
       font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--text-3);
     }
 
-    /* LOGIN STEP */
-    .login-wrap {
+    /* AUTH STEP */
+    .auth-wrap {
       max-width: 420px; margin: 0 auto; padding: 60px 24px;
     }
-    .login-logo { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 36px; }
-    .login-logo .brand { font-size: 22px; font-weight: 700; letter-spacing: -.025em; }
-    .login-logo .ai { font-size: .52em; color: var(--green); vertical-align: super; margin-left: .06em; }
-    .login-card {
+    .auth-logo { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 36px; }
+    .auth-logo .brand { font-size: 22px; font-weight: 700; letter-spacing: -.025em; }
+    .auth-logo .ai { font-size: .52em; color: var(--green); vertical-align: super; margin-left: .06em; }
+    .auth-card {
       background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--r-xl); padding: 32px 28px;
+      border-radius: var(--r-xl); padding: 32px 28px; position: relative; overflow: hidden;
     }
-    .login-card h2 { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
-    .login-card p { font-size: 14px; color: var(--text-2); font-weight: 300; margin-bottom: 28px; line-height: 1.55; }
+    .auth-card::before {
+      content: ''; position: absolute; top: 0; left: 18%; right: 18%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--green-border), transparent);
+    }
+    .auth-card h2 { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 6px; }
+    .auth-card p  { font-size: 14px; color: var(--text-2); font-weight: 300; margin-bottom: 28px; line-height: 1.55; }
+    .auth-panel { display: none; }
+    .auth-panel.active { display: block; }
+    .mode-toggle {
+      margin-top: 22px; text-align: center; font-size: 13px; color: var(--text-3);
+    }
+    .mode-toggle button {
+      background: none; border: none; padding: 0; color: var(--green);
+      font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer;
+    }
+    .mode-toggle button:hover { color: var(--green-hover); }
+
+    /* CHECK EMAIL */
+    .check-email-icon {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: var(--green-dim); border: 1px solid var(--green-border);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px; position: relative;
+    }
+    .check-email-icon::before {
+      content: ''; position: absolute; inset: -12px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(160,255,121,.10) 0%, transparent 70%);
+    }
+    .email-pill {
+      display: inline-block; font-size: 12px; font-family: var(--font-mono);
+      color: var(--green); background: var(--green-dim); border: 1px solid var(--green-border);
+      border-radius: 8px; padding: 5px 13px; margin: 0 auto 22px; text-align: center;
+    }
 
     @media (max-width: 480px) {
       .main { padding: 28px 16px 80px; }
@@ -263,31 +294,69 @@
   <div class="overlay-txt" id="overlay-txt">Guardando configuración…</div>
 </div>
 
-<!-- LOGIN PAGE -->
-<div id="login-page">
-  <div class="login-wrap">
-    <div class="login-logo">
-      <svg id="login-mark" width="36" height="36" viewBox="0 0 80 80" fill="none"></svg>
+<!-- AUTH PAGE -->
+<div id="auth-page">
+  <div class="auth-wrap">
+    <div class="auth-logo">
+      <svg id="auth-mark" width="36" height="36" viewBox="0 0 80 80" fill="none"></svg>
       <span class="brand">Pepino<span class="ai">AI</span></span>
     </div>
-    <div class="login-card">
-      <h2>Bienvenido</h2>
-      <p>Ingresá con tus credenciales para configurar tu agente de WhatsApp.</p>
+    <div class="auth-card">
 
-      <div class="error-bar" id="login-error">
-        ⚠️ <span id="login-error-msg">Email o contraseña incorrectos.</span>
+      <!-- SIGNUP PANEL -->
+      <div class="auth-panel active" id="panel-signup">
+        <h2>Empezá gratis</h2>
+        <p>Creá tu cuenta y configurá tu agente de WhatsApp en minutos.</p>
+        <div class="error-bar" id="signup-error">⚠️ <span id="signup-error-msg"></span></div>
+        <div class="field">
+          <label class="lbl" for="su-name">Tu nombre</label>
+          <input class="inp" id="su-name" type="text" placeholder="María García" autocomplete="name" />
+        </div>
+        <div class="field">
+          <label class="lbl" for="su-email">Email</label>
+          <input class="inp" id="su-email" type="email" placeholder="tu@email.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label class="lbl" for="su-pass">Contraseña</label>
+          <input class="inp" id="su-pass" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
+        </div>
+        <button class="btn btn-g btn-f btn-lg" id="signup-btn" onclick="doSignup()">Crear cuenta →</button>
+        <div class="mode-toggle">¿Ya tenés cuenta? <button onclick="setPanel('login')">Ingresar →</button></div>
       </div>
 
-      <div class="field">
-        <label class="lbl" for="login-email">Email</label>
-        <input class="inp" id="login-email" type="email" placeholder="tu@email.com" autocomplete="email" />
-      </div>
-      <div class="field">
-        <label class="lbl" for="login-pass">Contraseña</label>
-        <input class="inp" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" />
+      <!-- LOGIN PANEL -->
+      <div class="auth-panel" id="panel-login">
+        <h2>Bienvenido de nuevo</h2>
+        <p>Ingresá para continuar con tu configuración.</p>
+        <div class="error-bar" id="login-error">⚠️ <span id="login-error-msg"></span></div>
+        <div class="field">
+          <label class="lbl" for="li-email">Email</label>
+          <input class="inp" id="li-email" type="email" placeholder="tu@email.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label class="lbl" for="li-pass">Contraseña</label>
+          <input class="inp" id="li-pass" type="password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <button class="btn btn-g btn-f btn-lg" id="login-btn" onclick="doLogin()">Ingresar →</button>
+        <div class="mode-toggle">¿No tenés cuenta? <button onclick="setPanel('signup')">Crear cuenta →</button></div>
       </div>
 
-      <button class="btn btn-g btn-f btn-lg" id="login-btn" onclick="doLogin()">Ingresar →</button>
+      <!-- CHECK EMAIL PANEL -->
+      <div class="auth-panel" id="panel-check-email" style="text-align:center">
+        <div class="check-email-icon">
+          <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
+            <path d="M5 14l6 6L23 8" stroke="#A0FF79" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:10px;font-family:var(--font-mono)">Cuenta creada</div>
+        <h2 style="margin-bottom:10px">¡Revisá tu email!</h2>
+        <p>Te mandamos un link de confirmación a:</p>
+        <div class="email-pill" id="confirm-email-pill">—</div>
+        <p style="font-size:13px;color:var(--text-3);margin-bottom:24px">Una vez que confirmés tu cuenta, hacé clic en el botón.</p>
+        <button class="btn btn-g btn-f" onclick="retryAuth()">Ya confirmé, continuar →</button>
+        <div class="mode-toggle"><button onclick="setPanel('signup')">← Volver</button></div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -480,21 +549,119 @@
       showOnboarding();
       await loadExistingConfig();
     } else {
-      document.getElementById('login-page').style.display = 'block';
-      drawMark(document.getElementById('login-mark'), 36);
+      document.getElementById('auth-page').style.display = 'block';
+      drawMark(document.getElementById('auth-mark'), 36);
     }
+  }
+
+  /* ─── AUTH PANEL TOGGLE ─── */
+  function setPanel(name) {
+    document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+  }
+
+  /* ─── SIGNUP ─── */
+  async function doSignup() {
+    const name     = document.getElementById('su-name').value.trim();
+    const email    = document.getElementById('su-email').value.trim();
+    const password = document.getElementById('su-pass').value;
+    const btn      = document.getElementById('signup-btn');
+    const errBar   = document.getElementById('signup-error');
+    const errMsg   = document.getElementById('signup-error-msg');
+
+    errBar.classList.remove('vis');
+    if (!name || !email || !password) {
+      errMsg.textContent = 'Completá todos los campos.';
+      errBar.classList.add('vis'); return;
+    }
+    if (password.length < 6) {
+      errMsg.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+      errBar.classList.add('vis'); return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Creando cuenta…';
+
+    const { data, error } = await sb.auth.signUp({
+      email, password, options: { data: { name } }
+    });
+
+    if (error) {
+      errMsg.textContent = error.message?.includes('already registered')
+        ? 'Ya existe una cuenta con ese email.'
+        : (error.message || 'Error al crear la cuenta.');
+      errBar.classList.add('vis');
+      btn.disabled = false; btn.textContent = 'Crear cuenta →';
+      return;
+    }
+
+    if (data.session) {
+      // Email confirmation disabled — go straight to onboarding
+      S.userId = data.user.id;
+      showOnboarding();
+    } else {
+      // Email confirmation required
+      document.getElementById('confirm-email-pill').textContent = email;
+      setPanel('check-email');
+      btn.disabled = false; btn.textContent = 'Crear cuenta →';
+    }
+  }
+
+  /* ─── RETRY AUTH (after email confirmation) ─── */
+  async function retryAuth() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session?.user) {
+      S.userId = session.user.id;
+      showOnboarding();
+      await loadExistingConfig();
+    } else {
+      const errBar = document.getElementById('signup-error');
+      const errMsg = document.getElementById('signup-error-msg');
+      errMsg.textContent = 'Todavía no confirmaste tu email. Revisá la bandeja de entrada.';
+      setPanel('signup');
+      errBar.classList.add('vis');
+    }
+  }
+
+  /* ─── LOGIN ─── */
+  async function doLogin() {
+    const email    = document.getElementById('li-email').value.trim();
+    const password = document.getElementById('li-pass').value;
+    const btn      = document.getElementById('login-btn');
+    const errBar   = document.getElementById('login-error');
+    const errMsg   = document.getElementById('login-error-msg');
+
+    errBar.classList.remove('vis');
+    if (!email || !password) {
+      errMsg.textContent = 'Ingresá tu email y contraseña.';
+      errBar.classList.add('vis'); return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Ingresando…';
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+    if (error || !data.user) {
+      errMsg.textContent = 'Email o contraseña incorrectos.';
+      errBar.classList.add('vis');
+      btn.disabled = false; btn.textContent = 'Ingresar →';
+      return;
+    }
+
+    S.userId = data.user.id;
+    showOnboarding();
+    await loadExistingConfig();
   }
 
   /* ─── LOAD EXISTING CONFIG ─── */
   async function loadExistingConfig() {
     const { data } = await sb.from('agent_config').select('*').eq('user_id', S.userId).maybeSingle();
     if (!data) return;
-    S.businessName   = data.business_name   || '';
-    S.businessType   = data.business_type   || '';
-    S.timezone       = data.timezone        || 'America/Buenos_Aires';
-    S.agentName      = data.agent_name      || '';
-    S.greetingMessage    = data.greeting_message    || '';
-    S.agentInstructions  = data.agent_instructions  || '';
+    S.businessName       = data.business_name      || '';
+    S.businessType       = data.business_type      || '';
+    S.timezone           = data.timezone           || 'America/Buenos_Aires';
+    S.agentName          = data.agent_name         || '';
+    S.greetingMessage    = data.greeting_message   || '';
+    S.agentInstructions  = data.agent_instructions || '';
 
     document.getElementById('business-name').value      = S.businessName;
     document.getElementById('agent-name').value         = S.agentName;
@@ -509,43 +676,11 @@
     }
   }
 
-  /* ─── LOGIN ─── */
-  async function doLogin() {
-    const email    = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-pass').value;
-    const btn      = document.getElementById('login-btn');
-    const errBar   = document.getElementById('login-error');
-    const errMsg   = document.getElementById('login-error-msg');
-
-    if (!email || !password) {
-      errMsg.textContent = 'Por favor ingresá tu email y contraseña.';
-      errBar.classList.add('vis'); return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = 'Ingresando…';
-    errBar.classList.remove('vis');
-
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
-
-    if (error || !data.user) {
-      errMsg.textContent = 'Email o contraseña incorrectos. Verificá tus datos.';
-      errBar.classList.add('vis');
-      btn.disabled = false;
-      btn.textContent = 'Ingresar →';
-      return;
-    }
-
-    S.userId = data.user.id;
-    showOnboarding();
-    await loadExistingConfig();
-  }
-
   /* ─── SHOW ONBOARDING ─── */
   function showOnboarding() {
-    document.getElementById('login-page').style.display     = 'none';
+    document.getElementById('auth-page').style.display    = 'none';
     document.getElementById('onboarding-page').style.display = 'block';
-    document.getElementById('main-nav').style.display       = 'flex';
+    document.getElementById('main-nav').style.display    = 'flex';
     drawMark(document.getElementById('nav-mark'), 30);
   }
 
@@ -640,11 +775,13 @@
     S.businessType = chip.dataset.t;
   });
 
-  /* ─── ENTER KEY ON LOGIN ─── */
+  /* ─── ENTER KEY ON AUTH ─── */
   document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && document.getElementById('login-page').style.display !== 'none') {
-      doLogin();
-    }
+    if (e.key !== 'Enter') return;
+    if (document.getElementById('auth-page').style.display === 'none') return;
+    const activePanel = document.querySelector('.auth-panel.active')?.id;
+    if (activePanel === 'panel-signup') doSignup();
+    else if (activePanel === 'panel-login') doLogin();
   });
 
   /* ─── INIT ─── */
